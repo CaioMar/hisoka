@@ -69,12 +69,12 @@ def test_xgboost_rf_selector_fit_with_cat_col_should_fail(
     categorical_preds: List[str],
     target_name: str,
 ) -> None:
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(ValueError) as value_error:
         rfs = RandomFeatureSelector
         rfs.fit_transform(
             input_df[numerical_preds + categorical_preds], input_df[target_name]
         )
-    assert categorical_preds[0] in str(e.value)
+    assert categorical_preds[0] in str(value_error.value)
 
 
 @pytest.mark.parametrize("RandomFeatureSelector", RANDOM_FEATURE_SELECTORS)
@@ -91,3 +91,58 @@ def test_rf_selector_fit_transform_returns_dataframe(
         imputed_input_df[target_name],
     )
     assert isinstance(output_df, pd.DataFrame)
+
+
+def test_rf_selector_with_invalid_rand_var_type_should_fail(
+    imputed_input_df: pd.DataFrame,
+    numerical_preds: List[str],
+    categorical_preds: List[str],
+    target_name: str,
+) -> None:
+    with pytest.raises(ValueError) as value_error:
+        rfs = pp.RandomFeatureSelector(rand_var_type="str")
+        _ = rfs.fit(
+            imputed_input_df[numerical_preds + categorical_preds],
+            imputed_input_df[target_name],
+        )
+    assert "Invalid rand_var_type. Must be 'integer' or 'float'." == str(
+        value_error.value
+    )
+
+
+def test_rf_selector_with_invalid_problem_should_fail(
+    imputed_input_df: pd.DataFrame,
+    numerical_preds: List[str],
+    categorical_preds: List[str],
+    target_name: str,
+) -> None:
+    with pytest.raises(ValueError) as value_error:
+        rfs = pp.RandomFeatureSelector(problem="clustering")
+        _ = rfs.fit(
+            imputed_input_df[numerical_preds + categorical_preds],
+            imputed_input_df[target_name],
+        )
+    assert "Problem must be 'classification' or 'regression'." == str(value_error.value)
+
+
+@pytest.mark.parametrize(
+    "problem",
+    ["classification", "regression"],
+    ids=["Invalid model classification problem", "Invalid model regression problem"],
+)
+def test_rf_selector_with_invalid_model_should_fail(
+    imputed_input_df: pd.DataFrame,
+    problem: str,
+    numerical_preds: List[str],
+    categorical_preds: List[str],
+    target_name: str,
+) -> None:
+    with pytest.raises(ValueError) as value_error:
+        rfs = pp.RandomFeatureSelector(model="neural_network", problem=problem)
+        _ = rfs.fit(
+            imputed_input_df[numerical_preds + categorical_preds],
+            imputed_input_df[target_name],
+        )
+    assert "Model must be 'random_forest', 'catboost' or 'xgboost'." == str(
+        value_error.value
+    )

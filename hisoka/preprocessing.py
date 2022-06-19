@@ -92,6 +92,10 @@ class RandomFeatureSelector(BaseEstimator, TransformerMixin):
                     n_estimators=100,
                     colsample_bytree=0.8,
                 )
+            else:
+                raise ValueError(
+                    "Model must be 'random_forest', 'catboost' or 'xgboost'."
+                )
         elif self.problem == "regression":
             if self.model == "random_forest":
                 return RandomForestRegressor(
@@ -115,8 +119,11 @@ class RandomFeatureSelector(BaseEstimator, TransformerMixin):
                     n_estimators=100,
                     colsample_bytree=0.8,
                 )
-            raise ValueError("Problem must be 'classification' or 'regression'.")
-        raise ValueError("Model must be 'random_forest', 'catboost' or 'xgboost'.")
+            else:
+                raise ValueError(
+                    "Model must be 'random_forest', 'catboost' or 'xgboost'."
+                )
+        raise ValueError("Problem must be 'classification' or 'regression'.")
 
     def _random_feature(self, X: pd.DataFrame) -> None:
         if self.rand_var_type == "integer":
